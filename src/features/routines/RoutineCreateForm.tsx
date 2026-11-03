@@ -1,13 +1,22 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useRoutineDispatch, useRoutines } from "./RoutineContext";
 import { validateRoutineName } from "./routineReducer";
 import { Icon } from "../../components/Icon";
+import { notify } from "../feedback/useToastStore";
 
 // Chỉ vùng thông báo đọc state; form và ô nhập chỉ cần dispatch.
 function RoutineNameFeedback({ name, id }: { name: string; id: string }) {
   const routines = useRoutines();
-  const error = routines.some((r) => r.id === id) ? null : validateRoutineName(name, routines);
+  const created = routines.some((r) => r.id === id);
+  const lastNotified = useRef<string | null>(null);
+  const error = created ? null : validateRoutineName(name, routines);
+  useEffect(() => {
+    if (created && lastNotified.current !== id) {
+      lastNotified.current = id;
+      notify(`Đã tạo giáo án “${name.trim()}”.`);
+    }
+  }, [created, id, name]);
   return error ? (
     <p role="alert" id="routine-name-error" className="field-error">
       {error}
@@ -28,11 +37,7 @@ export const RoutineCreateForm = memo(function RoutineCreateForm() {
   return (
     <section className="create-panel">
       <div>
-        <span className="feature-icon">
-          <Icon name="plus" size={21} />
-        </span>
-        <h2>Tạo một nhịp tập mới</h2>
-        <p>Một giáo án riêng, một mục tiêu rõ ràng.</p>
+        <h2>Tạo giáo án</h2>
       </div>
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">

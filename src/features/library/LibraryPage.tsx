@@ -9,8 +9,9 @@ import { ExerciseRow } from "./ExerciseRow";
 import { selectExercises } from "./exerciseSelectors";
 import type { ExerciseSort, GroupFilter } from "./exerciseSelectors";
 import { Icon } from "../../components/Icon";
-import { useSessionStore } from "../session/useSessionStore";
+import { addToSessionWithFeedback, startSessionWithFeedback } from "../session/sessionFeedback";
 import { useRoutineDispatch, useRoutines } from "../routines/RoutineContext";
+import { notify } from "../feedback/useToastStore";
 
 interface ExerciseListData {
   exercises: Exercise[];
@@ -51,34 +52,38 @@ export default function LibraryPage() {
     () => selectExercises(EXERCISES, debounced, group, sort),
     [debounced, group, sort],
   );
-  const startSession = useSessionStore((state) => state.startSession);
-  const addToSession = useSessionStore((state) => state.addToSession);
   const onStart = useCallback(
     (exercise: Exercise) =>
-      startSession(
+      startSessionWithFeedback(
         exercises,
         exercises.findIndex((item) => item.id === exercise.id),
       ),
-    [exercises, startSession],
+    [exercises],
   );
   const onAddToRoutine = useCallback(
     (exercise: Exercise) => {
-      if (activeRoutineId)
-        dispatch({
-          type: "addExercise",
-          payload: { routineId: activeRoutineId, exerciseId: exercise.id },
-        });
+      const routine = routines.find((item) => item.id === activeRoutineId);
+      if (!routine) return;
+      if (routine.exerciseIds.includes(exercise.id)) {
+        notify("Bài tập đã có trong giáo án.", "info");
+        return;
+      }
+      dispatch({
+        type: "addExercise",
+        payload: { routineId: activeRoutineId, exerciseId: exercise.id },
+      });
+      notify(`Đã thêm “${exercise.name}” vào “${routine.name}”.`);
     },
-    [activeRoutineId, dispatch],
+    [activeRoutineId, dispatch, routines],
   );
   const itemData = useMemo(
     () => ({
       exercises,
       onStart,
-      onAddToSession: addToSession,
+      onAddToSession: addToSessionWithFeedback,
       onAddToRoutine: activeRoutineId ? onAddToRoutine : undefined,
     }),
-    [exercises, onStart, addToSession, onAddToRoutine, activeRoutineId],
+    [exercises, onStart, onAddToRoutine, activeRoutineId],
   );
   const search = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => setKeyword(event.target.value),
@@ -88,47 +93,15 @@ export default function LibraryPage() {
   return (
     <>
       <section className="page-intro">
-        <div>
-          <p className="eyebrow">KHÔNG GIAN TẬP LUYỆN CỦA BẠN</p>
-          <h1>
-            Mỗi nhịp tập.
-            <br />
-            <span>Một bước tiến.</span>
-          </h1>
-          <p className="intro-copy">
-            Chọn bài tập, tạo giáo án và tìm nhịp tập của riêng bạn.
-            <br />
-            Bắt đầu nhỏ. Kiên trì mỗi ngày.
-          </p>
-        </div>
-        <div className="intro-card">
-          <div className="intro-card-top">
-            <span className="status-dot" />
-            SẴN SÀNG KHI BẠN SẴN SÀNG
-            <Icon name="pulse" size={32} />
-          </div>
-          <strong>
-            10.000<span>bài tập để khám phá</span>
-          </strong>
-          <div className="intro-card-footer">
-            <span>5 nhóm cơ</span>
-            <span>10 huấn luyện viên</span>
-            <Icon name="arrow" />
-          </div>
-        </div>
+        <h1>Bấm giờ tập luyện</h1>
       </section>
       <section className="library-section" aria-labelledby="library-title">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">KHÁM PHÁ & LỰA CHỌN</p>
             <h2 id="library-title">
               Kho bài tập<span className="count-pill">10.000</span>
             </h2>
           </div>
-          <span className="section-note">
-            <Icon name="clock" size={15} />
-            30–120 giây / bài tập
-          </span>
         </div>
         <div className="library-panel">
           <div className="filters">
@@ -191,17 +164,16 @@ export default function LibraryPage() {
             <span role="status">
               Tìm thấy <strong>{exercises.length}</strong> bài tập
             </span>
-            <span className="muted">Chọn một bài để bắt đầu buổi tập</span>
           </div>
           <div className="table-scroll">
             <div role="table" aria-label="Danh sách bài tập" className="exercise-table">
               <div role="row" className="table-header">
                 <span role="columnheader">#</span>
-                <span role="columnheader">BÀI TẬP</span>
-                <span role="columnheader">HUẤN LUYỆN VIÊN</span>
-                <span role="columnheader">NHÓM CƠ</span>
-                <span role="columnheader">THỜI GIAN</span>
-                <span role="columnheader">THAO TÁC</span>
+                <span role="columnheader">Bài tập</span>
+                <span role="columnheader">Huấn luyện viên</span>
+                <span role="columnheader">Nhóm cơ</span>
+                <span role="columnheader">Thời gian</span>
+                <span role="columnheader">Thao tác</span>
               </div>
               {exercises.length ? (
                 <FixedSizeList
@@ -219,14 +191,9 @@ export default function LibraryPage() {
                 <div className="empty-state">
                   <Icon name="search" size={32} />
                   <h3>Không tìm thấy bài tập nào</h3>
-                  <p>Thử một từ khóa hoặc nhóm cơ khác nhé.</p>
                 </div>
               )}
             </div>
-          </div>
-          <div className="panel-footer">
-            <span className="status-dot" />
-            Nhịp tập tốt nhất là nhịp tập phù hợp với bạn.
           </div>
         </div>
       </section>

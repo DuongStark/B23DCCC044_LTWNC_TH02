@@ -4,6 +4,7 @@ import LibraryPage from "./features/library/LibraryPage";
 import { Icon } from "./components/Icon";
 import { SessionBar } from "./features/session/SessionBar";
 import { useTheme } from "./contexts/ThemeContext";
+import { ToastHost } from "./features/feedback/ToastHost";
 
 const SavedPage = lazy(() => import("./features/saved/SavedPage"));
 const RoutinesPage = lazy(() => import("./features/routines/RoutinesPage"));
@@ -16,13 +17,7 @@ export default function App() {
       <header className="site-header">
         <div className="header-inner">
           <NavLink to="/" className="brand" aria-label="Nhịp Tập - Trang chủ">
-            <span className="brand-mark">
-              <Icon name="pulse" size={25} />
-            </span>
-            <span>
-              nhịp<span className="brand-accent">tập</span>
-              <small>CHUYỂN ĐỘNG MỖI NGÀY</small>
-            </span>
+            Nhịp Tập
           </NavLink>
           <nav aria-label="Điều hướng chính">
             <NavLink end to="/">
@@ -65,12 +60,8 @@ export default function App() {
           </Routes>
         </Suspense>
       </main>
-      <footer className="site-footer">
-        <span>NHỊP TẬP © 2026</span>
-        <span>Một chút nỗ lực hôm nay. Một phiên bản tốt hơn ngày mai.</span>
-        <span>LTWNC · TH02</span>
-      </footer>
       <SessionBar />
+      <ToastHost />
     </div>
   );
 }

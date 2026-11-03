@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionBar } from "./SessionBar";
 import { useSessionStore } from "./useSessionStore";
 import { EXERCISES } from "../../data/exercises";
+import { useToastStore } from "../feedback/useToastStore";
 
 beforeEach(() =>
   useSessionStore.setState({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0 }),
@@ -21,6 +22,7 @@ describe("SessionBar", () => {
     act(() => vi.advanceTimersByTime(5000));
     expect(screen.getByText("Còn lại: 1:02")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Tạm dừng" }));
+    expect(useToastStore.getState().toast?.text).toBe("Đã tạm dừng buổi tập.");
     act(() => vi.advanceTimersByTime(3000));
     expect(screen.getByText("Còn lại: 1:02")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Bắt đầu" }));

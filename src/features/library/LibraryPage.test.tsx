@@ -6,6 +6,7 @@ import { renderWithProviders } from "../../test/renderWithProviders";
 import { useSessionStore } from "../session/useSessionStore";
 import { useSavedStore } from "../saved/useSavedStore";
 import * as format from "../../utils/format";
+import { useToastStore } from "../feedback/useToastStore";
 
 beforeEach(() => {
   localStorage.clear();
@@ -51,12 +52,14 @@ describe("LibraryPage", () => {
     const calls = formatter.mock.calls.length;
     fireEvent.click(first.getByRole("button", { name: "Lưu bài tập" }));
     expect(first.getByRole("button", { name: "Bỏ lưu" })).toHaveAttribute("aria-pressed", "true");
+    expect(useToastStore.getState().toast?.text).toBe("Đã lưu bài tập.");
     expect(formatter).toHaveBeenCalledTimes(calls);
     fireEvent.click(first.getByRole("button", { name: "+ Buổi tập" }));
     expect(useSessionStore.getState().queue.map((e) => e.id)).toEqual(["e1"]);
     fireEvent.click(first.getByRole("button", { name: "+ Giáo án" }));
     fireEvent.click(first.getByRole("button", { name: "+ Giáo án" }));
     expect(JSON.parse(localStorage.getItem("workout-routines")!)[0].exerciseIds).toEqual(["e1"]);
+    expect(useToastStore.getState().toast?.text).toBe("Bài tập đã có trong giáo án.");
     fireEvent.change(screen.getByLabelText("Nhóm cơ"), { target: { value: "Vai" } });
     expect(screen.getByRole("status")).toHaveTextContent("Tìm thấy 2000 bài tập");
     fireEvent.change(screen.getByLabelText("Sắp xếp"), { target: { value: "duration" } });

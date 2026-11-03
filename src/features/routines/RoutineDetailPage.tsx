@@ -3,7 +3,8 @@ import { useMemo } from "react";
 import { useRoutineDispatch, useRoutines } from "./RoutineContext";
 import { EXERCISE_BY_ID } from "../../data/exerciseIndex";
 import { formatDuration } from "../../utils/format";
-import { useSessionStore } from "../session/useSessionStore";
+import { startSessionWithFeedback } from "../session/sessionFeedback";
+import { notify } from "../feedback/useToastStore";
 import { Icon } from "../../components/Icon";
 import type { Exercise } from "../../types";
 
@@ -11,7 +12,6 @@ export default function RoutineDetailPage() {
   const { id } = useParams();
   const routines = useRoutines();
   const dispatch = useRoutineDispatch();
-  const startSession = useSessionStore((state) => state.startSession);
   const routine = routines.find((item) => item.id === id);
   const exercises = useMemo(
     () =>
@@ -38,7 +38,6 @@ export default function RoutineDetailPage() {
         <Link to="/routines" className="breadcrumb">
           ← Giáo án của bạn
         </Link>
-        <p className="eyebrow">KẾ HOẠCH CHO BUỔI TẬP</p>
         <h1 className="routine-detail-title">{routine.name}</h1>
         <div className="detail-meta">
           <span>{exercises.length} bài</span>
@@ -54,7 +53,7 @@ export default function RoutineDetailPage() {
           <button
             className="primary-button"
             disabled={!exercises.length}
-            onClick={() => startSession(exercises, 0)}
+            onClick={() => startSessionWithFeedback(exercises, 0)}
           >
             <Icon name="play" size={15} />
             Tập tất cả
@@ -74,12 +73,13 @@ export default function RoutineDetailPage() {
                 <button
                   className="delete-button"
                   aria-label={`Bỏ ${exercise.name}`}
-                  onClick={() =>
+                  onClick={() => {
                     dispatch({
                       type: "removeExercise",
                       payload: { routineId: routine.id, exerciseId: exercise.id },
-                    })
-                  }
+                    });
+                    notify(`Đã bỏ “${exercise.name}” khỏi giáo án.`);
+                  }}
                 >
                   Bỏ
                 </button>
@@ -90,7 +90,6 @@ export default function RoutineDetailPage() {
           <div className="empty-state">
             <Icon name="plus" size={30} />
             <h3>Thêm bài cho buổi tập của bạn</h3>
-            <p>Chọn giáo án này trong kho rồi bấm + Giáo án ở bài yêu thích.</p>
             <Link to="/" className="link-button">
               Đến kho bài tập
               <Icon name="arrow" size={16} />

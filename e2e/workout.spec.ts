@@ -166,3 +166,42 @@ test("lazy chunks chỉ tải khi mở trang, theme và bố cục mobile", asyn
   await page.screenshot({ path: "artifacts/workout-mobile.png", fullPage: true });
   expect(errors).toEqual([]);
 });
+
+test("thông báo phản hồi khi lưu, thêm trùng và tạo giáo án", async ({ page }) => {
+  await page.goto("/");
+  await exercise(page, "e1").getByRole("button", { name: "Lưu bài tập", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Đã lưu bài tập." })).toBeVisible();
+  await exercise(page, "e1").getByRole("button", { name: "+ Buổi tập", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Đã thêm “Đẩy tạ đơn 1” vào buổi tập." }),
+  ).toBeVisible();
+  await exercise(page, "e1").getByRole("button", { name: "+ Buổi tập", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Bài tập đã có trong buổi tập." }),
+  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "Đồng hồ buổi tập" })).toContainText(
+    "Buổi tập: 1 bài",
+  );
+  await page.getByRole("button", { name: "Đóng thông báo" }).click();
+  await expect(page.locator(".toast")).toHaveCount(0);
+
+  await menu(page, "Giáo án").click();
+  await page.getByLabel("Tên giáo án").fill("Ngày ngực");
+  await page.getByRole("button", { name: "Tạo", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Đã tạo giáo án “Ngày ngực”." }),
+  ).toBeVisible();
+  await menu(page, "Kho bài tập").click();
+  await exercise(page, "e1").getByRole("button", { name: "+ Giáo án", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Đã thêm “Đẩy tạ đơn 1” vào “Ngày ngực”." }),
+  ).toBeVisible();
+  await exercise(page, "e1").getByRole("button", { name: "+ Giáo án", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Bài tập đã có trong giáo án." }),
+  ).toBeVisible();
+  await page.screenshot({ path: "artifacts/feedback-desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: "artifacts/feedback-mobile.png", fullPage: true });
+});

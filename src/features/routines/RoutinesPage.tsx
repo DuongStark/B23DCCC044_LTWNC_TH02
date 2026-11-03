@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useRoutineDispatch, useRoutines } from "./RoutineContext";
 import { RoutineCreateForm } from "./RoutineCreateForm";
 import { Icon } from "../../components/Icon";
+import { notify } from "../feedback/useToastStore";
 
 export default function RoutinesPage() {
   const routines = useRoutines();
@@ -9,41 +10,33 @@ export default function RoutinesPage() {
   return (
     <>
       <div className="page-heading">
-        <p className="eyebrow">TẬP LUYỆN THEO CÁCH CỦA BẠN</p>
         <h1>Giáo án của bạn</h1>
-        <p>
-          Sắp xếp bài tập thành những buổi tập có chủ đích.
-          <br />
-          Mọi kế hoạch lớn đều bắt đầu từ một bước nhỏ.
-        </p>
       </div>
       <RoutineCreateForm />
       <div className="section-heading routine-section-heading">
         <h2>
           Danh sách giáo án<span className="count-pill">{routines.length}</span>
         </h2>
-        <span className="section-note">Chọn bài từ kho để thêm vào giáo án</span>
       </div>
       {routines.length ? (
         <div className="routine-grid">
-          {routines.map((routine, index) => (
+          {routines.map((routine) => (
             <article className="routine-card" key={routine.id}>
               <div className="routine-card-top">
-                <span className="feature-icon">
-                  <Icon name="list" size={22} />
-                </span>
-                <span className="routine-index">GIÁO ÁN {String(index + 1).padStart(2, "0")}</span>
+                <h3>
+                  <Link to={`/routines/${encodeURIComponent(routine.id)}`}>{routine.name}</Link>
+                </h3>
                 <button
                   className="icon-button delete-button"
                   aria-label={`Xóa ${routine.name}`}
-                  onClick={() => dispatch({ type: "remove", payload: { id: routine.id } })}
+                  onClick={() => {
+                    dispatch({ type: "remove", payload: { id: routine.id } });
+                    notify(`Đã xóa giáo án “${routine.name}”.`);
+                  }}
                 >
                   <Icon name="trash" size={16} />
                 </button>
               </div>
-              <h3>
-                <Link to={`/routines/${encodeURIComponent(routine.id)}`}>{routine.name}</Link>
-              </h3>
               <p>{routine.exerciseIds.length} bài</p>
               <Link
                 className="routine-card-link"
@@ -60,7 +53,6 @@ export default function RoutinesPage() {
         <section className="library-panel empty-state">
           <Icon name="list" size={34} />
           <h3>Giáo án đầu tiên đang chờ bạn</h3>
-          <p>Đặt tên cho giáo án ở trên, rồi thêm bài từ kho bài tập.</p>
         </section>
       )}
     </>
