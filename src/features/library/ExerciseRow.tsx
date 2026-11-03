@@ -9,9 +9,10 @@ interface ExerciseRowProps {
   position: number;
   onStart?: (exercise: Exercise) => void;
   onAddToSession?: (exercise: Exercise) => void;
+  onAddToRoutine?: (exercise: Exercise) => void;
 }
 
-export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onStart, onAddToSession }: ExerciseRowProps) {
+export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onStart, onAddToSession, onAddToRoutine }: ExerciseRowProps) {
   return (
     <div className="exercise-row" role="row" data-exercise-id={exercise.id}>
       <span role="cell" className="row-number">{String(position).padStart(2, '0')}</span>
@@ -23,7 +24,7 @@ export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onSta
         <button className="start-button" disabled={!onStart} onClick={() => onStart?.(exercise)}><Icon name="play" size={12} />Bắt đầu</button>
         <SaveButton id={exercise.id} />
         <button className="compact-button" disabled={!onAddToSession} onClick={() => onAddToSession?.(exercise)}>+ Buổi tập</button>
-        <button className="compact-button" disabled>+ Giáo án</button>
+        <button className="compact-button" disabled={!onAddToRoutine} onClick={() => onAddToRoutine?.(exercise)}>+ Giáo án</button>
       </div>
     </div>
   );

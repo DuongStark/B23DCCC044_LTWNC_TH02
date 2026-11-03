@@ -10,23 +10,31 @@ import { selectExercises } from './exerciseSelectors';
 import type { ExerciseSort, GroupFilter } from './exerciseSelectors';
 import { Icon } from '../../components/Icon';
 import { useSessionStore } from '../session/useSessionStore';
+import { useRoutineDispatch, useRoutines } from '../routines/RoutineContext';
 
-interface ExerciseListData { exercises: Exercise[]; onStart: (exercise: Exercise) => void; onAddToSession: (exercise: Exercise) => void }
+interface ExerciseListData { exercises: Exercise[]; onStart: (exercise: Exercise) => void; onAddToSession: (exercise: Exercise) => void; onAddToRoutine?: (exercise: Exercise) => void }
 const itemKey = (index: number, data: ExerciseListData) => data.exercises[index].id;
 const VirtualRow = memo(function VirtualRow({ index, style, data }: ListChildComponentProps<ExerciseListData>) {
-  return <div style={style}><ExerciseRow exercise={data.exercises[index]} position={index + 1} onStart={data.onStart} onAddToSession={data.onAddToSession} /></div>;
+  return <div style={style}><ExerciseRow exercise={data.exercises[index]} position={index + 1} onStart={data.onStart} onAddToSession={data.onAddToSession} onAddToRoutine={data.onAddToRoutine} /></div>;
 }, areEqual);
 
 export default function LibraryPage() {
   const [keyword, setKeyword] = useState('');
   const [group, setGroup] = useState<GroupFilter>('all');
   const [sort, setSort] = useState<ExerciseSort>('default');
+  const [selectedRoutineId, setSelectedRoutineId] = useState('');
+  const routines = useRoutines();
+  const dispatch = useRoutineDispatch();
+  const activeRoutineId = routines.find(r => r.id === selectedRoutineId)?.id ?? routines[0]?.id ?? '';
   const debounced = useDebounce(keyword, 300);
   const exercises = useMemo(() => selectExercises(EXERCISES, debounced, group, sort), [debounced, group, sort]);
   const startSession = useSessionStore(state => state.startSession);
   const addToSession = useSessionStore(state => state.addToSession);
   const onStart = useCallback((exercise: Exercise) => startSession(exercises, exercises.findIndex(item => item.id === exercise.id)), [exercises, startSession]);
-  const itemData = useMemo(() => ({ exercises, onStart, onAddToSession: addToSession }), [exercises, onStart, addToSession]);
+  const onAddToRoutine = useCallback((exercise: Exercise) => {
+    if (activeRoutineId) dispatch({ type: 'addExercise', payload: { routineId: activeRoutineId, exerciseId: exercise.id } });
+  }, [activeRoutineId, dispatch]);
+  const itemData = useMemo(() => ({ exercises, onStart, onAddToSession: addToSession, onAddToRoutine: activeRoutineId ? onAddToRoutine : undefined }), [exercises, onStart, addToSession, onAddToRoutine, activeRoutineId]);
   const search = useCallback((event: ChangeEvent<HTMLInputElement>) => setKeyword(event.target.value), []);
 
   return (
@@ -42,6 +50,7 @@ export default function LibraryPage() {
             <div className="field search-field"><label htmlFor="keyword">Tìm kiếm</label><div className="search-input"><Icon name="search" /><input id="keyword" value={keyword} onChange={search} placeholder="Tên bài tập hoặc huấn luyện viên..." autoComplete="off" /></div></div>
             <div className="field"><label htmlFor="group">Nhóm cơ</label><select id="group" value={group} onChange={e => setGroup(e.target.value as GroupFilter)}><option value="all">Tất cả</option>{GROUPS.map(g => <option key={g}>{g}</option>)}</select></div>
             <div className="field"><label htmlFor="sort">Sắp xếp</label><select id="sort" value={sort} onChange={e => setSort(e.target.value as ExerciseSort)}><option value="default">Mặc định</option><option value="name">Tên A–Z</option><option value="duration">Thời lượng tăng dần</option></select></div>
+            <div className="field routine-filter"><label htmlFor="active-routine">Giáo án đang chọn</label><select id="active-routine" value={activeRoutineId} onChange={e => setSelectedRoutineId(e.target.value)} disabled={!routines.length}>{!routines.length && <option value="">Chưa có giáo án</option>}{routines.map(routine => <option key={routine.id} value={routine.id}>{routine.name}</option>)}</select></div>
           </div>
           <div className="results-meta"><span role="status">Tìm thấy <strong>{exercises.length}</strong> bài tập</span><span className="muted">Chọn một bài để bắt đầu buổi tập</span></div>
           <div className="table-scroll"><div role="table" aria-label="Danh sách bài tập" className="exercise-table">
