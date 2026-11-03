@@ -9,11 +9,12 @@ import { ExerciseRow } from './ExerciseRow';
 import { selectExercises } from './exerciseSelectors';
 import type { ExerciseSort, GroupFilter } from './exerciseSelectors';
 import { Icon } from '../../components/Icon';
+import { useSessionStore } from '../session/useSessionStore';
 
-interface ExerciseListData { exercises: Exercise[] }
+interface ExerciseListData { exercises: Exercise[]; onStart: (exercise: Exercise) => void; onAddToSession: (exercise: Exercise) => void }
 const itemKey = (index: number, data: ExerciseListData) => data.exercises[index].id;
 const VirtualRow = memo(function VirtualRow({ index, style, data }: ListChildComponentProps<ExerciseListData>) {
-  return <div style={style}><ExerciseRow exercise={data.exercises[index]} position={index + 1} /></div>;
+  return <div style={style}><ExerciseRow exercise={data.exercises[index]} position={index + 1} onStart={data.onStart} onAddToSession={data.onAddToSession} /></div>;
 }, areEqual);
 
 export default function LibraryPage() {
@@ -22,7 +23,10 @@ export default function LibraryPage() {
   const [sort, setSort] = useState<ExerciseSort>('default');
   const debounced = useDebounce(keyword, 300);
   const exercises = useMemo(() => selectExercises(EXERCISES, debounced, group, sort), [debounced, group, sort]);
-  const itemData = useMemo(() => ({ exercises }), [exercises]);
+  const startSession = useSessionStore(state => state.startSession);
+  const addToSession = useSessionStore(state => state.addToSession);
+  const onStart = useCallback((exercise: Exercise) => startSession(exercises, exercises.findIndex(item => item.id === exercise.id)), [exercises, startSession]);
+  const itemData = useMemo(() => ({ exercises, onStart, onAddToSession: addToSession }), [exercises, onStart, addToSession]);
   const search = useCallback((event: ChangeEvent<HTMLInputElement>) => setKeyword(event.target.value), []);
 
   return (

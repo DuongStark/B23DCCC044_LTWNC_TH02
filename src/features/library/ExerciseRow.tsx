@@ -2,14 +2,16 @@ import { memo } from 'react';
 import type { Exercise } from '../../types';
 import { formatDuration } from '../../utils/format';
 import { Icon } from '../../components/Icon';
+import { SaveButton } from '../saved/SaveButton';
 
 interface ExerciseRowProps {
   exercise: Exercise;
   position: number;
   onStart?: (exercise: Exercise) => void;
+  onAddToSession?: (exercise: Exercise) => void;
 }
 
-export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onStart }: ExerciseRowProps) {
+export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onStart, onAddToSession }: ExerciseRowProps) {
   return (
     <div className="exercise-row" role="row" data-exercise-id={exercise.id}>
       <span role="cell" className="row-number">{String(position).padStart(2, '0')}</span>
@@ -19,8 +21,8 @@ export const ExerciseRow = memo(function ExerciseRow({ exercise, position, onSta
       <span role="cell" className="duration">{formatDuration(exercise.duration)}</span>
       <div role="cell" className="row-actions">
         <button className="start-button" disabled={!onStart} onClick={() => onStart?.(exercise)}><Icon name="play" size={12} />Bắt đầu</button>
-        <button className="icon-button save-button" aria-label="Lưu bài tập" disabled>☆</button>
-        <button className="compact-button" disabled>+ Buổi tập</button>
+        <SaveButton id={exercise.id} />
+        <button className="compact-button" disabled={!onAddToSession} onClick={() => onAddToSession?.(exercise)}>+ Buổi tập</button>
         <button className="compact-button" disabled>+ Giáo án</button>
       </div>
     </div>

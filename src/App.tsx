@@ -1,6 +1,8 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
 import LibraryPage from './features/library/LibraryPage';
 import { Icon } from './components/Icon';
+import { SessionBar } from './features/session/SessionBar';
+import SavedPage from './features/saved/SavedPage';
 
 export default function App() {
   return <div className="app">
@@ -11,11 +13,12 @@ export default function App() {
     </div></header>
     <main className="main-content"><Routes>
       <Route path="/" element={<LibraryPage />} />
-      <Route path="/saved" element={<div className="page-heading"><h1>Bài tập đã lưu</h1><p>Chức năng được triển khai ở Phần 2.</p></div>} />
+      <Route path="/saved" element={<SavedPage />} />
       <Route path="/routines" element={<div className="page-heading"><h1>Giáo án của bạn</h1><p>Chức năng được triển khai ở Phần 3.</p></div>} />
       <Route path="/routines/:id" element={<p>Chi tiết giáo án được triển khai ở Phần 3.</p>} />
       <Route path="*" element={<p>Không tìm thấy trang. <NavLink to="/">Về kho bài tập</NavLink></p>} />
     </Routes></main>
     <footer className="site-footer"><span>NHỊP TẬP © 2026</span><span>Một chút nỗ lực hôm nay. Một phiên bản tốt hơn ngày mai.</span><span>LTWNC · TH02</span></footer>
+    <SessionBar />
   </div>;
 }
