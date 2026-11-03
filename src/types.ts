@@ -1,4 +1,4 @@
-export type MuscleGroup = 'Ngực' | 'Lưng' | 'Chân' | 'Vai' | 'Tay';
+export type MuscleGroup = "Ngực" | "Lưng" | "Chân" | "Vai" | "Tay";
 
 export interface Exercise {
   id: string;

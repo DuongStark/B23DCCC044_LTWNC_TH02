@@ -1,10 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { formatDuration } from './format';
+import { describe, expect, it } from "vitest";
+import { formatDuration } from "./format";
 
-describe('formatDuration', () => {
-  it.each([[0, '0:00'], [30, '0:30'], [67, '1:07'], [120, '2:00']])(
-    'định dạng %i giây thành %s', (seconds, expected) => {
-      expect(formatDuration(seconds)).toBe(expected);
-    },
-  );
+describe("formatDuration", () => {
+  it.each([
+    [0, "0:00"],
+    [30, "0:30"],
+    [67, "1:07"],
+    [120, "2:00"],
+  ])("định dạng %i giây thành %s", (seconds, expected) => {
+    expect(formatDuration(seconds)).toBe(expected);
+  });
 });

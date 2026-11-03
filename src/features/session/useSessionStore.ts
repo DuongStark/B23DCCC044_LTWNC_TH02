@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { Exercise } from '../../types';
+import { create } from "zustand";
+import type { Exercise } from "../../types";
 
 export interface SessionState {
   queue: Exercise[];
@@ -15,7 +15,10 @@ export interface SessionState {
 }
 
 export const useSessionStore = create<SessionState>()((set, get) => ({
-  queue: [], currentIndex: -1, isRunning: false, elapsed: 0,
+  queue: [],
+  currentIndex: -1,
+  isRunning: false,
+  elapsed: 0,
   startSession: (exercises, startIndex) => {
     if (!Number.isInteger(startIndex) || startIndex < 0 || startIndex >= exercises.length) {
       set({ queue: [], currentIndex: -1, isRunning: false, elapsed: 0 });
@@ -27,7 +30,11 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     const { queue, currentIndex, isRunning, elapsed } = get();
     if (!queue.length) return;
     const index = Math.max(0, currentIndex);
-    set({ currentIndex: index, isRunning: !isRunning, elapsed: elapsed >= queue[index].duration ? 0 : elapsed });
+    set({
+      currentIndex: index,
+      isRunning: !isRunning,
+      elapsed: elapsed >= queue[index].duration ? 0 : elapsed,
+    });
   },
   next: () => {
     const { queue, currentIndex } = get();
@@ -40,8 +47,9 @@ export const useSessionStore = create<SessionState>()((set, get) => ({
     if (currentIndex < 0) return;
     set({ currentIndex: elapsed > 3 ? currentIndex : Math.max(0, currentIndex - 1), elapsed: 0 });
   },
-  addToSession: exercise => {
-    if (!get().queue.some(item => item.id === exercise.id)) set({ queue: [...get().queue, exercise] });
+  addToSession: (exercise) => {
+    if (!get().queue.some((item) => item.id === exercise.id))
+      set({ queue: [...get().queue, exercise] });
   },
   tick: () => {
     const { isRunning, queue, currentIndex, elapsed } = get();
