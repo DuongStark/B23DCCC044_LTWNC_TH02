@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.superpowers/
+.env*
+!.env.example
+artifacts/
